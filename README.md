@@ -19,7 +19,14 @@ https://has-auth.onrender.com/api
 4. Use token for protected routes
 5. Admin can assign roles
 ```
+# Free Testing Account
 
+Use this account for testing admin features.
+```
+Admin Test Account
+Email: admin@gmail.com
+Password: Admin123@
+```
 ---
 
 # 1. Register User
