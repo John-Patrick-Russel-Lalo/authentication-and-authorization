@@ -12,6 +12,11 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 
+app.get("/test", (req, res) => {
+    console.log("TEST HIT");
+    res.json({ ok: true });
+});
+
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });
