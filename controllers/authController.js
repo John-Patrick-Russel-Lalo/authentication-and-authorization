@@ -12,7 +12,6 @@ export const register = async (req, res) => {
             lastName,
             email,
             password,
-            req.conn // we will fix this below
         );
 
         
@@ -23,6 +22,7 @@ export const register = async (req, res) => {
         });
 
     } catch (err) {
+        console.error("REGISTER ERROR:", err);
         res.status(err.status || 500).json({
             message: err.message
         });
