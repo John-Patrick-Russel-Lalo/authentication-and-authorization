@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { getAllUsers } from "../models/userModel.js";
 
 export const assignRole = async (req, res) => {
   try {
@@ -45,3 +46,20 @@ export const assignRole = async (req, res) => {
     });
   }
 };
+
+
+
+
+export const getUsers = async (req, res) => {
+    try {
+        const users = await getAllUsers();
+
+        res.status(200).json(users);
+
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+};
+

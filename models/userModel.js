@@ -65,6 +65,6 @@ export const loginUser = async (email, password) => {
 };
 
 export const getAllUsers = async () => {
-    const result = await pool.query("SELECT * FROM users");
+    const result = await pool.query("SELECT first_name, last_name, email, role FROM users");
     return result.rows;
 };
