@@ -2,6 +2,7 @@ import express from "express";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { roleMiddleware } from "../middleware/roleMiddleware.js";
 import { assignRole } from "../controllers/userController.js";
+import { getAllUsers } from "../models/userModel.js";
 
 const router = express.Router();
 
@@ -34,6 +35,11 @@ router.patch(
     authMiddleware,
     roleMiddleware(["admin"]),
     assignRole
+);
+
+router.get(
+    "/all", 
+    getAllUsers
 );
 
 export default router;
