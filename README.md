@@ -1,4 +1,4 @@
-````md
+
 # API Route Usage Guide
 
 This guide explains how to use the HAS Authentication and Authorization API.
