@@ -1,32 +1,54 @@
+````md
 # API Route Usage Guide
 
-This guide explains how to use the authentication and authorization API routes.
+This guide explains how to use the HAS Authentication and Authorization API.
 
 Base URL:
 
-```txt id="r1"
+```txt
 https://has-auth.onrender.com/api
-```
+````
 
 ---
 
 # Authentication Flow
 
-```txt id="r2"
+```txt
 1. Register account
 2. Login account
-3. Receive JWT token
-4. Use token for protected routes
-5. Admin can assign roles
+3. Receive authentication cookie
+4. Use protected routes
+5. Admin assigns user roles
 ```
+
+---
+
 # Free Testing Account
 
 Use this account for testing admin features.
-```
+
+```txt
 Admin Test Account
+
 Email: admin@gmail.com
 Password: Admin123@
+Role: admin
 ```
+
+---
+
+# Authentication System
+
+This API uses:
+
+* JWT Authentication
+* HTTP Only Cookies
+* Role-Based Access Control (RBAC)
+
+After successful login, the server automatically stores the authentication token inside a secure HTTP-only cookie.
+
+Protected routes automatically read the cookie for authentication.
+
 ---
 
 # 1. Register User
@@ -35,13 +57,13 @@ Creates a new user account.
 
 ## Route
 
-```http id="r3"
+```http
 POST /auth/register
 ```
 
 Full URL:
 
-```txt id="r4"
+```txt
 https://has-auth.onrender.com/api/auth/register
 ```
 
@@ -49,7 +71,7 @@ https://has-auth.onrender.com/api/auth/register
 
 ## Request Body
 
-```json id="r5"
+```json
 {
   "firstName": "John",
   "lastName": "Doe",
@@ -62,21 +84,15 @@ https://has-auth.onrender.com/api/auth/register
 
 ## Important Notes
 
-* Newly registered users automatically receive:
-
-```txt id="r6"
-patient
-```
-
-role by default.
-
-* Users cannot assign their own role during registration.
+* Newly registered users automatically receive the `patient` role.
+* Users cannot assign their own roles during registration.
+* Role assignment is managed only by administrators.
 
 ---
 
 ## Success Response
 
-```json id="r7"
+```json
 {
   "message": "User created"
 }
@@ -86,17 +102,17 @@ role by default.
 
 # 2. Login User
 
-Authenticates the user and returns a JWT token.
+Authenticates the user and creates an authentication cookie.
 
 ## Route
 
-```http id="r8"
+```http
 POST /auth/login
 ```
 
 Full URL:
 
-```txt id="r9"
+```txt
 https://has-auth.onrender.com/api/auth/login
 ```
 
@@ -104,7 +120,7 @@ https://has-auth.onrender.com/api/auth/login
 
 ## Request Body
 
-```json id="r10"
+```json
 {
   "email": "john@gmail.com",
   "password": "123456"
@@ -115,62 +131,61 @@ https://has-auth.onrender.com/api/auth/login
 
 ## Success Response
 
-```json id="r11"
+```json
 {
-  "message": "Login successful",
-  "token": "YOUR_JWT_TOKEN"
+  "message": "Login successful"
 }
 ```
 
 ---
 
-# 3. Using Protected Routes
+# Cookie Authentication
 
-Protected routes require a JWT token.
+After login:
 
-After login, copy the token and include it in the request headers.
+* The server automatically creates a secure HTTP-only cookie.
+* The browser automatically sends the cookie on protected requests.
+* No manual JWT handling is required.
+
+Example Cookie:
+
+```txt
+token=JWT_TOKEN_HERE
+```
 
 ---
 
-## Authorization Header Format
+# 3. Protected Routes
 
-```http id="r12"
-Authorization: Bearer YOUR_JWT_TOKEN
-```
+Protected routes require authentication.
+
+The system automatically verifies the authentication cookie before allowing access.
 
 ---
 
 # 4. Assign Role (Admin Only)
 
-Allows an admin to change another user's role.
+Allows administrators to assign roles to users.
 
 ---
 
 ## Route
 
-```http id="r13"
+```http
 PATCH /users/:userId/role
 ```
 
 Full URL Example:
 
-```txt id="r14"
+```txt
 https://has-auth.onrender.com/api/users/f3891476-98aa-467c-ac74-5109b9e4cb45/role
-```
-
----
-
-## Required Headers
-
-```http id="r15"
-Authorization: Bearer ADMIN_TOKEN
 ```
 
 ---
 
 ## Request Body
 
-```json id="r16"
+```json
 {
   "role": "doctor"
 }
@@ -180,7 +195,7 @@ Authorization: Bearer ADMIN_TOKEN
 
 ## Allowed Roles
 
-```txt id="r17"
+```txt
 patient
 doctor
 staff
@@ -191,29 +206,17 @@ admin
 
 # Important Notes About Role Assignment
 
-* Only users with:
-
-```txt id="r18"
-admin
-```
-
-role can assign roles.
-
-* Non-admin users will receive:
-
-```json id="r19"
-{
-  "message": "Access denied"
-}
-```
+* Only users with the `admin` role can assign roles.
+* Non-admin users cannot modify roles.
+* Invalid roles are automatically rejected by the system.
 
 ---
 
 # Example Role Assignment Flow
 
-```txt id="r20"
+```txt
 1. User registers
-2. User becomes patient
+2. User becomes patient by default
 3. Admin logs in
 4. Admin sends PATCH request
 5. User role changes to doctor/staff/admin
@@ -225,31 +228,40 @@ role can assign roles.
 
 ## Step 1 — Login as Admin
 
-```http id="r21"
+```http
 POST https://has-auth.onrender.com/api/auth/login
 ```
 
-Copy the returned token.
+Body:
+
+```json
+{
+  "email": "admin@gmail.com",
+  "password": "Admin123@"
+}
+```
 
 ---
 
-## Step 2 — Set Authorization Header
+## Step 2 — Copy Authentication Cookie
 
-```http id="r22"
-Authorization: Bearer YOUR_ADMIN_TOKEN
-```
+After login:
+
+* Open Cookies tab in Thunder Client/Postman
+* Copy the generated `token` cookie
+* Protected routes will automatically use it
 
 ---
 
 ## Step 3 — Send Role Update Request
 
-```http id="r23"
+```http
 PATCH https://has-auth.onrender.com/api/users/USER_ID/role
 ```
 
 Body:
 
-```json id="r24"
+```json
 {
   "role": "staff"
 }
@@ -259,49 +271,47 @@ Body:
 
 # Common Errors
 
-## Invalid Token
+## Invalid or Expired Token
 
-```json id="r25"
+```json
 {
   "message": "Invalid or expired token"
 }
 ```
 
-Cause:
+Possible Causes:
 
-* missing token
+* missing cookie
 * expired token
-* incorrect JWT_SECRET
+* invalid JWT secret
 
 ---
 
 ## Access Denied
 
-```json id="r26"
+```json
 {
   "message": "Access denied"
 }
 ```
 
-Cause:
+Possible Cause:
 
-* user is not admin
+* authenticated user is not an admin
 
 ---
 
 ## Invalid Role
 
-```json id="r27"
+```json
 {
   "message": "Invalid role"
 }
 ```
 
-Cause:
+Allowed Roles:
 
-* role is not:
-
-```txt id="r28"
+```txt
 patient
 doctor
 staff
@@ -312,13 +322,13 @@ admin
 
 ## User Not Found
 
-```json id="r29"
+```json
 {
   "message": "User not found"
 }
 ```
 
-Cause:
+Possible Cause:
 
 * invalid user ID
 
@@ -326,9 +336,25 @@ Cause:
 
 # Current Role System
 
-| Role    | Permissions                   |
-| ------- | ----------------------------- |
-| patient | Basic user access             |
-| doctor  | Doctor access                 |
-| staff   | Staff access                  |
-| admin   | Full system + role assignment |
+| Role    | Permissions                            |
+| ------- | -------------------------------------- |
+| patient | Basic patient access                   |
+| doctor  | Doctor-level access                    |
+| staff   | Staff management access                |
+| admin   | Full system access and role assignment |
+
+---
+
+# Technology Stack
+
+* Node.js
+* Express.js
+* PostgreSQL
+* Supabase
+* JWT Authentication
+* HTTP-only Cookies
+* Role-Based Access Control (RBAC)
+* Render Deployment
+
+```
+```
