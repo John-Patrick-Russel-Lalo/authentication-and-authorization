@@ -1,35 +1,16 @@
-
-# API Route Usage Guide
-
-This guide explains how to use the HAS Authentication and Authorization API.
+# HAS Authentication API Guide
 
 Base URL:
 
 ```txt
 https://has-auth.onrender.com/api
-````
-
----
-
-# Authentication Flow
-
-```txt
-1. Register account
-2. Login account
-3. Receive authentication cookie
-4. Use protected routes
-5. Admin assigns user roles
 ```
 
 ---
 
-# Free Testing Account
-
-Use this account for testing admin features.
+# Test Admin Account
 
 ```txt
-Admin Test Account
-
 Email: admin@gmail.com
 Password: Admin123@
 Role: admin
@@ -37,23 +18,20 @@ Role: admin
 
 ---
 
-# Authentication System
+# Authentication Flow
 
-This API uses:
+```txt
+Register → Login → Cookie Created → Access Protected Routes
+```
 
-* JWT Authentication
-* HTTP Only Cookies
-* Role-Based Access Control (RBAC)
-
-After successful login, the server automatically stores the authentication token inside a secure HTTP-only cookie.
-
-Protected routes automatically read the cookie for authentication.
+The API uses:
+- JWT
+- HTTP-only Cookies
+- Role-Based Access Control (RBAC)
 
 ---
 
 # 1. Register User
-
-Creates a new user account.
 
 ## Route
 
@@ -61,15 +39,13 @@ Creates a new user account.
 POST /auth/register
 ```
 
-Full URL:
+## Full URL
 
 ```txt
 https://has-auth.onrender.com/api/auth/register
 ```
 
----
-
-## Request Body
+## Body
 
 ```json
 {
@@ -80,16 +56,6 @@ https://has-auth.onrender.com/api/auth/register
 }
 ```
 
----
-
-## Important Notes
-
-* Newly registered users automatically receive the `patient` role.
-* Users cannot assign their own roles during registration.
-* Role assignment is managed only by administrators.
-
----
-
 ## Success Response
 
 ```json
@@ -98,11 +64,11 @@ https://has-auth.onrender.com/api/auth/register
 }
 ```
 
+New users automatically receive the `patient` role.
+
 ---
 
 # 2. Login User
-
-Authenticates the user and creates an authentication cookie.
 
 ## Route
 
@@ -110,24 +76,20 @@ Authenticates the user and creates an authentication cookie.
 POST /auth/login
 ```
 
-Full URL:
+## Full URL
 
 ```txt
 https://has-auth.onrender.com/api/auth/login
 ```
 
----
-
-## Request Body
+## Body
 
 ```json
 {
-  "email": "john@gmail.com",
-  "password": "123456"
+  "email": "admin@gmail.com",
+  "password": "Admin123@"
 }
 ```
-
----
 
 ## Success Response
 
@@ -137,37 +99,45 @@ https://has-auth.onrender.com/api/auth/login
 }
 ```
 
+After login, the server automatically creates a secure authentication cookie.
+
 ---
 
-# Cookie Authentication
+# 3. Get All Users
 
-After login:
+Returns all registered users.
 
-* The server automatically creates a secure HTTP-only cookie.
-* The browser automatically sends the cookie on protected requests.
-* No manual JWT handling is required.
+## Route
 
-Example Cookie:
+```http
+GET /all
+```
+
+## Full URL
 
 ```txt
-token=JWT_TOKEN_HERE
+https://has-auth.onrender.com/api/all
+```
+
+## Success Response
+
+```json
+[
+  {
+    "id": "USER_ID",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@gmail.com",
+    "role": "patient"
+  }
+]
 ```
 
 ---
 
-# 3. Protected Routes
+# 4. Assign User Role (Admin Only)
 
-Protected routes require authentication.
-
-The system automatically verifies the authentication cookie before allowing access.
-
----
-
-# 4. Assign Role (Admin Only)
-
-Allows administrators to assign roles to users.
-
----
+Changes the role of a specific user.
 
 ## Route
 
@@ -175,23 +145,19 @@ Allows administrators to assign roles to users.
 PATCH /users/:userId/role
 ```
 
-Full URL Example:
+## Full URL Example
 
 ```txt
-https://has-auth.onrender.com/api/users/f3891476-98aa-467c-ac74-5109b9e4cb45/role
+https://has-auth.onrender.com/api/users/USER_ID/role
 ```
 
----
-
-## Request Body
+## Body
 
 ```json
 {
   "role": "doctor"
 }
 ```
-
----
 
 ## Allowed Roles
 
@@ -202,37 +168,17 @@ staff
 admin
 ```
 
----
-
-# Important Notes About Role Assignment
-
-* Only users with the `admin` role can assign roles.
-* Non-admin users cannot modify roles.
-* Invalid roles are automatically rejected by the system.
+Only admins can assign roles.
 
 ---
 
-# Example Role Assignment Flow
+# Example Admin Flow
 
-```txt
-1. User registers
-2. User becomes patient by default
-3. Admin logs in
-4. Admin sends PATCH request
-5. User role changes to doctor/staff/admin
-```
-
----
-
-# Example Using Thunder Client / Postman
-
-## Step 1 — Login as Admin
+## Step 1 — Login
 
 ```http
 POST https://has-auth.onrender.com/api/auth/login
 ```
-
-Body:
 
 ```json
 {
@@ -243,23 +189,11 @@ Body:
 
 ---
 
-## Step 2 — Copy Authentication Cookie
-
-After login:
-
-* Open Cookies tab in Thunder Client/Postman
-* Copy the generated `token` cookie
-* Protected routes will automatically use it
-
----
-
-## Step 3 — Send Role Update Request
+## Step 2 — Assign Role
 
 ```http
 PATCH https://has-auth.onrender.com/api/users/USER_ID/role
 ```
-
-Body:
 
 ```json
 {
@@ -271,19 +205,13 @@ Body:
 
 # Common Errors
 
-## Invalid or Expired Token
+## Invalid Token
 
 ```json
 {
   "message": "Invalid or expired token"
 }
 ```
-
-Possible Causes:
-
-* missing cookie
-* expired token
-* invalid JWT secret
 
 ---
 
@@ -295,10 +223,6 @@ Possible Causes:
 }
 ```
 
-Possible Cause:
-
-* authenticated user is not an admin
-
 ---
 
 ## Invalid Role
@@ -307,15 +231,6 @@ Possible Cause:
 {
   "message": "Invalid role"
 }
-```
-
-Allowed Roles:
-
-```txt
-patient
-doctor
-staff
-admin
 ```
 
 ---
@@ -328,33 +243,25 @@ admin
 }
 ```
 
-Possible Cause:
+---
 
-* invalid user ID
+# Current Roles
+
+| Role | Access |
+|---|---|
+| patient | Basic access |
+| doctor | Doctor access |
+| staff | Staff access |
+| admin | Full access |
 
 ---
 
-# Current Role System
+# Tech Stack
 
-| Role    | Permissions                            |
-| ------- | -------------------------------------- |
-| patient | Basic patient access                   |
-| doctor  | Doctor-level access                    |
-| staff   | Staff management access                |
-| admin   | Full system access and role assignment |
-
----
-
-# Technology Stack
-
-* Node.js
-* Express.js
-* PostgreSQL
-* Supabase
-* JWT Authentication
-* HTTP-only Cookies
-* Role-Based Access Control (RBAC)
-* Render Deployment
-
-```
-```
+- Node.js
+- Express.js
+- PostgreSQL
+- Supabase
+- JWT
+- Cookies
+- Render
