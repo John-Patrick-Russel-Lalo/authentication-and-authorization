@@ -6,6 +6,11 @@ Base URL:
 https://has-auth.onrender.com/api
 ```
 
+JWT_SECRET:
+```
+JWT_SECRET=wkzg15151515@
+```
+
 ---
 
 # Test Admin Account
