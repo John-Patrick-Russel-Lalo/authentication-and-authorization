@@ -11,6 +11,8 @@ JWT_SECRET:
 JWT_SECRET=wkzg15151515@
 ```
 jwt secret for verifying the token.
+
+
 ---
 
 # Test Admin Account
