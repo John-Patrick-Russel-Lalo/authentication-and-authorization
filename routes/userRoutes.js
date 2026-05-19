@@ -42,4 +42,15 @@ router.get(
     getUsers
 );
 
+router.post(
+    "/getuser",
+    authMiddleware,
+    (req, res) => {
+        res.json({
+            message: "User retrieved successfully",
+            user: req.user
+        });
+    }
+)
+
 export default router;
