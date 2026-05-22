@@ -53,4 +53,11 @@ router.post(
     }
 )
 
+router.delete(
+    "/users/:id",
+    authMiddleware,
+    roleMiddleware(["admin"]),
+    deleteUser
+);
+
 export default router;
